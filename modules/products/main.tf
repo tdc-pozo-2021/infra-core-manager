@@ -29,6 +29,10 @@ resource "github_repository" "example" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "main" {
+  name = "/aws/codebuild/pipeline-logs-${var.name}-${data.aws_region.current.name}"
+}
+
 resource "aws_s3_bucket" "artifacts" {
   bucket = "code-pipeline-artifacts-${var.name}-${data.aws_region.current.name}"
   acl    = "private"
@@ -112,7 +116,7 @@ resource "aws_codebuild_project" "main" {
 
   logs_config {
     cloudwatch_logs {
-      group_name = "/aws/codebuild/BaseInfraProvider-build"
+      group_name =  "/aws/codebuild/pipeline-logs-${var.name}-${data.aws_region.current.name}"
       status     = "ENABLED"
     }
   }
@@ -234,6 +238,17 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
             "Resource": "${aws_codestarconnections_connection.main.arn}",
             "Action": [
                 "codestar-connections:UseConnection"
+            ]
+        },{
+            "Effect": "Allow",
+            "Resource": "${aws_cloudwatch_log_group.main.arn}",
+            "Action": [
+                "logs:GetLogEvents",
+                "logs:PutLogEvents",
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutRetentionPolicy",
+                "logs:CreateLogGroup"
             ]
         }
     ]
