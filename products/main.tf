@@ -137,7 +137,7 @@ resource "aws_codepipeline" "main" {
       output_artifacts = ["SourceArtifact"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.main.arn
-        BranchName           = "main"
+        BranchName           = "master"
         FullRepositoryId    = "${var.git_config.owner}/infra-${var.name}"
       }
     }
@@ -171,7 +171,7 @@ resource "aws_codepipeline_webhook" "codepipeline-webhook" {
 
   filter {
     json_path    = "$.ref"
-    match_equals = "refs/heads/main"
+    match_equals = "refs/heads/master"
   }
 
   authentication_configuration {
