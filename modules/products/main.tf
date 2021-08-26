@@ -268,11 +268,11 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
             "Effect": "Allow",
             "Resource": [
                 "${aws_cloudwatch_log_group.main.arn}",
-                "${aws_cloudwatch_log_group.main.arn}*"
+                "${aws_cloudwatch_log_group.main.arn}:log-stream*"
             ],
             "Action": [
                 "logs:GetLogEvents",
-                 "logs:PutLogEvents",
+                "logs:PutLogEvents",
                 "logs:CreateLogStream",
                 "logs:DescribeLogStreams",
                 "logs:PutRetentionPolicy",
