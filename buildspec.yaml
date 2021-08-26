@@ -19,4 +19,4 @@ phases:
     commands:
       - export GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id $CLOUD_SECRETS --query=SecretString --output text | jq -r '.GITHUB_TOKEN')
       - terragrunt run-all init
-      - terragrunt run-all apply -auto-approve
+      - terragrunt run-all apply -auto-approve --terragrunt-non-interactive
