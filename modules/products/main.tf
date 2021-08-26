@@ -220,7 +220,7 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
     "Statement": [
         {
             "Effect": "Allow",
-            "Resource": "${aws_iam_role.code-build-role.arn}",
+            "Resource": "${aws_codebuild_project.main.arn}",
             "Action": [
                 "codebuild:BatchGetBuilds",
                 "codebuild:StartBuild"
@@ -243,16 +243,19 @@ resource "aws_iam_policy" "access-artifacts-bucket-policy" {
   policy = <<POLICY
 {
   "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "s3:ListBucket",
-      "Resource": "${aws_s3_bucket.artifacts.arn}"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:PutObject"],
-      "Resource": "${aws_s3_bucket.artifacts.arn}/*"
+  "Statement": [{
+      "Effect":"Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning",
+        "s3:PutObjectAcl",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.artifacts.arn}",
+        "${aws_s3_bucket.artifacts.arn}/*"
+      ]
     }
   ]
 }
