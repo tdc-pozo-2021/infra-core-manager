@@ -11,7 +11,7 @@ resource "aws_codestarconnections_connection" "main" {
 }
 
 resource "github_repository" "example" {
-  count = var.create_repo ? 1 : 0
+  count       = var.create_repo ? 1 : 0
   name        = "infra-${var.name}"
   description = "Managed by Terraform."
 
@@ -65,7 +65,7 @@ ASSUME_ROLE_POLICY
 
 
 resource "aws_iam_policy" "power-access-policy" {
-  count = var.power_access_enabled ? 1 : 0
+  count  = var.power_access_enabled ? 1 : 0
   name   = "AWSPowerAccess-tdc-${var.name}"
   policy = <<POLICY
 {
@@ -82,22 +82,11 @@ POLICY
 }
 
 resource "aws_iam_policy" "custom-policy" {
-  count = var.custom_policy == null ? 0 : 1
+  count  = var.custom_policy == null ? 0 : 1
   name   = "AWSCustomPolicy-tdc-${var.name}"
   policy = <<POLICY
 "${var.custom_policy}"
 POLICY
-}
-
-
-resource "aws_iam_role_policy_attachment" "cloud-watch-access-attach" {
-  role       = aws_iam_role.code-build-role.name
-  policy_arn = aws_iam_policy.cloud-watch-policy.arn
-}
-
-resource "aws_iam_role_policy_attachment" "start-build-attach" {
-  role       = aws_iam_role.code-build-role.name
-  policy_arn = aws_iam_policy.codebuild-start-get.arn
 }
 
 resource "aws_iam_role_policy_attachment" "power-access-attach" {
@@ -109,7 +98,7 @@ resource "aws_iam_role_policy_attachment" "power-access-attach" {
 
 
 resource "aws_iam_role_policy_attachment" "custom-policy-attach" {
-  count = var.custom_policy == null ? 0 : 1
+  count      = var.custom_policy == null ? 0 : 1
   role       = aws_iam_role.code-build-role.name
   policy_arn = aws_iam_policy.custom-policy[0].arn
 }
@@ -152,7 +141,7 @@ resource "aws_codebuild_project" "main" {
 
   logs_config {
     cloudwatch_logs {
-      group_name =  "/aws/codebuild/pipeline-logs-${var.name}-${data.aws_region.current.name}"
+      group_name = "/aws/codebuild/pipeline-logs-${var.name}-${data.aws_region.current.name}"
       status     = "ENABLED"
     }
   }
@@ -180,8 +169,8 @@ resource "aws_codepipeline" "main" {
       output_artifacts = ["SourceArtifact"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.main.arn
-        BranchName           = "master"
-        FullRepositoryId    = "${var.git_config.owner}/infra-${var.name}"
+        BranchName       = "master"
+        FullRepositoryId = "${var.git_config.owner}/infra-${var.name}"
       }
     }
   }
@@ -256,7 +245,7 @@ POLICY
 }
 
 resource "aws_iam_policy" "codebuild-start-get-policy" {
-  name   = "AWSCodeBuildGetLogPolicy-tdc-${var.name}-${data.aws_region.current.name}"
+  name   = "AWSCodePipelineStartBuildPolicy-tdc-${var.name}-${data.aws_region.current.name}"
   policy = <<POLICY
 {
     "Version": "2012-10-17",
@@ -268,27 +257,23 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
                 "codebuild:BatchGetBuilds",
                 "codebuild:StartBuild"
             ]
-        }
-    ]
-}
-POLICY
-}
-
-
-resource "aws_iam_policy" "cloud-watch-policy" {
-  name   = "AWSCodePipelineStartBuildPolicy-tdc-${var.name}-${data.aws_region.current.name}"
-  policy = <<POLICY
-{
-    "Version": "2012-10-17",
-    "Statement": [
+        },
         {
             "Effect": "Allow",
-            "Resource": [
-                "${aws_cloudwatch_log_group.main.arn}",
-                "${aws_cloudwatch_log_group.main.arn}*"
-            ],
+            "Resource": "${aws_codestarconnections_connection.main.arn}",
             "Action": [
-                "logs:*"
+                "codestar-connections:UseConnection"
+            ]
+        },{
+            "Effect": "Allow",
+            "Resource": "${aws_cloudwatch_log_group.main.arn}",
+            "Action": [
+                "logs:GetLogEvents",
+                "logs:PutLogEvents",
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutRetentionPolicy",
+                "logs:CreateLogGroup"
             ]
         }
     ]
@@ -317,7 +302,7 @@ resource "aws_iam_policy" "access-artifacts-bucket-policy" {
         "${aws_s3_bucket.tfstate.arn}",
         "${aws_s3_bucket.tfstate.arn}/*"
       ]
-    }
+    } 
   ]
 }
 POLICY
