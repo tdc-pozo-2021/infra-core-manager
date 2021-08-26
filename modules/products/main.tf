@@ -24,6 +24,9 @@ resource "github_repository" "example" {
       repository = var.template_repository_name
     }
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_s3_bucket" "artifacts" {
