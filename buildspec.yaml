@@ -1,0 +1,22 @@
+version: 0.2
+env:
+  variables:
+    CLOUD_SECRETS: arn:aws:secretsmanager:us-east-1:828236972493:secret:cloud-shared-secret-sRgPYY
+    TF_STATE_BUCKET: tfstate-pozo-tdc-2021-infra-us-east-1
+phases:
+  install:
+    commands:
+      - apt-get update && apt-get install unzip jq
+      - wget --quiet -O terraform.zip https://releases.hashicorp.com/terraform/1.0.5/terraform_1.0.5_linux_amd64.zip
+      - unzip terraform.zip
+      - chmod +x terraform
+      - mv terraform /usr/bin
+      - wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.31.5/terragrunt_linux_amd64
+      - mv ./terragrunt_linux_amd64 ./terragrunt
+      - chmod +x ./terragrunt
+      - mv terragrunt /usr/local/bin
+  build:
+    commands:
+      - export GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id $CLOUD_SECRETS --query=SecretString --output text | jq -r '.GITHUB_TOKEN')
+      - terragrunt run-all init
+      - terragrunt run-all plan

@@ -1,0 +1,4 @@
+.terraform*
+.terragrunt-cache*
+*.lock*
+run.sh
