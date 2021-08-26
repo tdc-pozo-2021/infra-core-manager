@@ -20,5 +20,15 @@ inputs = {
         create_repo = false
         power_access_enabled = true
         custom_policy         = null
+    },{
+        name = "hello-world"
+        default_tags = {
+          DevOwner = "Guilherme Pozo"
+        }
+        template_repository_enabled = true
+        template_repository_name = "product-blueprint"
+        create_repo = true
+        power_access_enabled = false
+        custom_policy = null      
     }]
 }
