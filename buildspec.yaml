@@ -2,7 +2,6 @@ version: 0.2
 env:
   variables:
     CLOUD_SECRETS: arn:aws:secretsmanager:us-east-1:828236972493:secret:cloud-shared-secret-sRgPYY
-    TF_STATE_BUCKET: tfstate-pozo-tdc-2021-infra-us-east-1
 phases:
   install:
     commands:
