@@ -38,6 +38,11 @@ resource "aws_s3_bucket" "artifacts" {
   acl    = "private"
 }
 
+resource "aws_s3_bucket" "tfstate" {
+  bucket = "tfstate-${var.name}-${data.aws_region.current.name}"
+  acl    = "private"
+}
+
 resource "aws_iam_role" "code-build-role" {
   name                 = "AWSCodeBuildServiceRole-tdc-${var.name}-${data.aws_region.current.name}"
   path                 = "/service-role/"
@@ -76,12 +81,28 @@ resource "aws_iam_policy" "power-access-policy" {
 POLICY
 }
 
+resource "aws_iam_policy" "custom-policy" {
+  count = var.custom_policy == null ? 0 : 1
+  name   = "AWSCustomPolicy-tdc-${var.name}"
+  policy = <<POLICY
+"${var.custom_policy}"
+POLICY
+}
+
 resource "aws_iam_role_policy_attachment" "power-access-attach" {
   count = var.power_access_enabled ? 1 : 0
 
   role       = aws_iam_role.code-build-role.name
   policy_arn = aws_iam_policy.power-access-policy[0].arn
 }
+
+
+resource "aws_iam_role_policy_attachment" "custom-policy-attach" {
+  count = var.custom_policy == null ? 0 : 1
+  role       = aws_iam_role.code-build-role.name
+  policy_arn = aws_iam_policy.custom-policy[0].arn
+}
+
 
 
 resource "aws_codebuild_project" "main" {
@@ -111,6 +132,10 @@ resource "aws_codebuild_project" "main" {
     environment_variable {
       name  = "TF_VAR_github_token"
       value = var.git_config.token
+    }
+    environment_variable {
+      name  = "TF_STATE_BUCKET"
+      value = aws_s3_bucket.tfstate.id
     }
   }
 
@@ -256,6 +281,7 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
 POLICY
 }
 
+
 resource "aws_iam_policy" "access-artifacts-bucket-policy" {
   name   = "AWSCodePipelineAccessArtifactsBucketPolicy-tdc-${var.name}-${data.aws_region.current.name}"
   policy = <<POLICY
@@ -272,14 +298,15 @@ resource "aws_iam_policy" "access-artifacts-bucket-policy" {
       ],
       "Resource": [
         "${aws_s3_bucket.artifacts.arn}",
-        "${aws_s3_bucket.artifacts.arn}/*"
+        "${aws_s3_bucket.artifacts.arn}/*",
+        "${aws_s3_bucket.tfstate.arn}",
+        "${aws_s3_bucket.tfstate.arn}/*"
       ]
     }
   ]
 }
 POLICY
 }
-
 
 resource "aws_iam_role_policy_attachment" "access-artifacts-bucket-attach" {
   role       = aws_iam_role.assume-codepipeline-role.name

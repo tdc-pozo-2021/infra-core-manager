@@ -13,5 +13,6 @@ variable "products" {
     template_repository_name    = string
     create_repo                 = bool
     power_access_enabled        = bool
+    custom_policy               = map(any)
   }))
 }

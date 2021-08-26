@@ -19,5 +19,6 @@ inputs = {
         template_repository_name = null
         create_repo = false
         power_access_enabled = true
+        custom_policy         = null
     }]
 }

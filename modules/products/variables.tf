@@ -33,3 +33,8 @@ variable "power_access_enabled" {
   type = bool
   default = false
 }
+
+variable "custom_policy" {
+  type = map(any)
+  default = null
+}
