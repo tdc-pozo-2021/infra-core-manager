@@ -89,6 +89,12 @@ resource "aws_iam_policy" "custom-policy" {
 POLICY
 }
 
+
+resource "aws_iam_role_policy_attachment" "cloud-watch-access-attach" {
+  role       = aws_iam_role.code-build-role.name
+  policy_arn = aws_iam_policy.cloud-watch-policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "power-access-attach" {
   count = var.power_access_enabled ? 1 : 0
 
@@ -244,8 +250,8 @@ resource "aws_iam_role" "assume-codepipeline-role" {
 POLICY
 }
 
-resource "aws_iam_policy" "codebuild-start-get-policy" {
-  name   = "AWSCodePipelineStartBuildPolicy-tdc-${var.name}-${data.aws_region.current.name}"
+resource "aws_iam_policy" "cloud-watch-policy" {
+  name   = "AWSCodeBuildGetLogPolicy-tdc-${var.name}-${data.aws_region.current.name}"
   policy = <<POLICY
 {
     "Version": "2012-10-17",
@@ -257,14 +263,20 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
                 "codebuild:BatchGetBuilds",
                 "codebuild:StartBuild"
             ]
-        },
+        }
+    ]
+}
+POLICY
+}
+
+
+resource "aws_iam_policy" "codebuild-start-get-policy" {
+  name   = "AWSCodePipelineStartBuildPolicy-tdc-${var.name}-${data.aws_region.current.name}"
+  policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
         {
-            "Effect": "Allow",
-            "Resource": "${aws_codestarconnections_connection.main.arn}",
-            "Action": [
-                "codestar-connections:UseConnection"
-            ]
-        },{
             "Effect": "Allow",
             "Resource": [
                 "${aws_cloudwatch_log_group.main.arn}",
