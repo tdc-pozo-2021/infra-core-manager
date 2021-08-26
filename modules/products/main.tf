@@ -225,6 +225,13 @@ resource "aws_iam_policy" "codebuild-start-get-policy" {
                 "codebuild:BatchGetBuilds",
                 "codebuild:StartBuild"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Resource": "${aws_codestarconnections_connection.main.arn}",
+            "Action": [
+                "codestar-connections:UseConnection"
+            ]
         }
     ]
 }
