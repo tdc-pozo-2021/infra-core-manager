@@ -95,6 +95,11 @@ resource "aws_iam_role_policy_attachment" "cloud-watch-access-attach" {
   policy_arn = aws_iam_policy.cloud-watch-policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "start-build-attach" {
+  role       = aws_iam_role.code-build-role.name
+  policy_arn = aws_iam_policy.codebuild-start-get.arn
+}
+
 resource "aws_iam_role_policy_attachment" "power-access-attach" {
   count = var.power_access_enabled ? 1 : 0
 
@@ -250,7 +255,7 @@ resource "aws_iam_role" "assume-codepipeline-role" {
 POLICY
 }
 
-resource "aws_iam_policy" "cloud-watch-policy" {
+resource "aws_iam_policy" "codebuild-start-get-policy" {
   name   = "AWSCodeBuildGetLogPolicy-tdc-${var.name}-${data.aws_region.current.name}"
   policy = <<POLICY
 {
@@ -270,7 +275,7 @@ POLICY
 }
 
 
-resource "aws_iam_policy" "codebuild-start-get-policy" {
+resource "aws_iam_policy" "cloud-watch-policy" {
   name   = "AWSCodePipelineStartBuildPolicy-tdc-${var.name}-${data.aws_region.current.name}"
   policy = <<POLICY
 {
