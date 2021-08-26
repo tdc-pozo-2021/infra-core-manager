@@ -2,3 +2,4 @@
 .terragrunt-cache*
 *.lock*
 run.sh
+*.g.tf*
